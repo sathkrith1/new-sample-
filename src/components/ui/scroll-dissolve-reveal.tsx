@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useMemo } from "react";
+import React, { useRef, useMemo, useState, useEffect } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useTexture, OrthographicCamera } from "@react-three/drei";
 import * as THREE from "three";
@@ -368,6 +368,7 @@ export interface ScrollDissolveRevealProps {
   className?: string;
   containerClassName?: string;
   scrollContainerRef?: React.RefObject<HTMLElement | null>;
+  reducedMotion?: boolean;
 }
 
 export function ScrollDissolveReveal({
@@ -376,21 +377,57 @@ export function ScrollDissolveReveal({
   className,
   containerClassName,
   scrollContainerRef,
+  reducedMotion = false,
 }: ScrollDissolveRevealProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setPrefersReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    setIsMobile(window.innerWidth < 768);
+  }, []);
+
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"],
     ...(scrollContainerRef && { container: scrollContainerRef })
   });
 
+  const containerHeight = isMobile ? '200vh' : '300vh';
+
+  // Fallback for reduced motion or if WebGL isn't performing well
+  const shouldUseFallback = prefersReducedMotion || reducedMotion;
+
+  if (shouldUseFallback) {
+    return (
+      <div
+        ref={containerRef}
+        className={cn("relative", containerClassName)}
+        style={{ height: containerHeight }}
+      >
+        <div className={cn("sticky top-0 h-screen w-full", className)}>
+          <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${imageFront})` }} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       ref={containerRef}
-      className={cn("relative h-[300vh] w-full", containerClassName)}
+      className={cn("relative w-full", containerClassName)}
+      style={{ height: containerHeight }}
     >
       <div className={cn("sticky top-0 h-screen w-full", className)}>
-        <Canvas>
+        <Canvas
+          gl={{
+            preserveDrawingBuffer: false,
+            alpha: true,
+            antialias: true,
+            powerPreference: "high-performance",
+          }}
+        >
           <OrthographicCamera
             makeDefault
             manual

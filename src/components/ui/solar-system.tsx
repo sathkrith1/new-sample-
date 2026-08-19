@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Orbit as OrbitIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -216,6 +216,11 @@ export const SolarSystem = React.forwardRef<HTMLDivElement, SolarSystemProps>(
     ref
   ) => {
     const [hoveredId, setHoveredId] = useState<string | null>(null);
+    const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+    useEffect(() => {
+      setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    }, []);
 
     // Cosmic dust particle animations coordinates
     const dustItems = [
@@ -227,6 +232,20 @@ export const SolarSystem = React.forwardRef<HTMLDivElement, SolarSystemProps>(
       { delay: "-15s", radius: "365px", color: "#eab308" },
       { delay: "-23s", radius: "430px", color: "#a855f7" },
     ];
+
+    const handleEnter = (id: string) => {
+      setHoveredId(id);
+    };
+
+    const handleLeave = () => {
+      if (!isTouchDevice) setHoveredId(null);
+    };
+
+    const handleClick = (id: string) => {
+      if (isTouchDevice) {
+        setHoveredId(prev => prev === id ? null : id);
+      }
+    };
 
     return (
       <div
@@ -479,8 +498,10 @@ export const SolarSystem = React.forwardRef<HTMLDivElement, SolarSystemProps>(
                         ======================================================================
                       */}
                       <div
-                        onMouseEnter={() => setHoveredId(item.id)}
-                        onMouseLeave={() => setHoveredId(null)}
+                        onMouseEnter={() => handleEnter(item.id)}
+                        onMouseLeave={handleLeave}
+                        onTouchStart={(e) => { e.preventDefault(); handleEnter(item.id); }}
+                        onClick={() => handleClick(item.id)}
                         className="orbit-logo-card animate-custom-billboard"
                         style={{
                           animationDelay: `${delayValue}s`,

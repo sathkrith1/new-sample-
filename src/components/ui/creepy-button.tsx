@@ -31,6 +31,7 @@ export const CreepyButton = ({
     const eyesRef = useRef<HTMLSpanElement>(null);
     const [eyeCoords, setEyeCoords] = useState<Coords>({ x: 0, y: 0 });
     const [isHovered, setIsHovered] = useState(false);
+    const [isPressed, setIsPressed] = useState(false);
 
     const updateEyes = (e: React.MouseEvent | React.TouchEvent) => {
         const userEvent =
@@ -38,38 +39,31 @@ export const CreepyButton = ({
 
         if (!eyesRef.current) return;
 
-        // get the center of the eyes container
         const eyesRect = eyesRef.current.getBoundingClientRect();
         const eyesCenter = {
             x: eyesRect.left + eyesRect.width / 2,
             y: eyesRect.top + eyesRect.height / 2,
         };
 
-        // cursor position
         const cursor = {
             x: userEvent.clientX,
             y: userEvent.clientY,
         };
 
-        // calculate the eye angle
         const dx = cursor.x - eyesCenter.x;
         const dy = cursor.y - eyesCenter.y;
         const angle = Math.atan2(-dy, dx) + Math.PI / 2;
 
-        // pupil distance from the eye center
-        const visionRangeX = 180; // Max distance to look horizontally
-        const visionRangeY = 75; // Max distance to look vertically
+        const visionRangeX = 180;
+        const visionRangeY = 75;
         const distance = Math.hypot(dx, dy);
 
-        // Limit the movement so pupils don't go too far
-        // We normalize the distance influence
         const x = (Math.sin(angle) * Math.min(distance, visionRangeX)) / visionRangeX;
         const y = (Math.cos(angle) * Math.min(distance, visionRangeY)) / visionRangeY;
 
         setEyeCoords({ x, y });
     };
 
-    // Reset eyes when mouse leaves
     const resetEyes = () => {
         setEyeCoords({ x: 0, y: 0 });
         setIsHovered(false);
@@ -84,6 +78,7 @@ export const CreepyButton = ({
             className={cn(
                 "relative min-w-[9em] rounded-xl bg-black cursor-pointer outline-none select-none group tap-highlight-transparent",
                 "focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-400",
+                "min-h-[48px]", // Better touch target
                 className
             )}
             onClick={onClick}
@@ -91,10 +86,18 @@ export const CreepyButton = ({
                 updateEyes(e);
                 setIsHovered(true);
             }}
+            onTouchStart={(e) => {
+                updateEyes(e);
+                setIsHovered(true);
+                setIsPressed(true);
+            }}
             onTouchMove={updateEyes}
+            onTouchEnd={() => setIsPressed(false)}
             onMouseLeave={resetEyes}
+            onMouseDown={() => setIsPressed(true)}
+            onMouseUp={() => setIsPressed(false)}
             onFocus={() => setIsHovered(true)}
-            onBlur={() => setIsHovered(false)}
+            onBlur={resetEyes}
             {...props}
         >
             {/* Eyes Container */}
@@ -147,6 +150,7 @@ export const CreepyButton = ({
                 )}
                 animate={{
                     rotate: isHovered ? -12 : 0,
+                    scale: isPressed ? 0.98 : 1,
                 }}
                 transition={{
                     type: "spring",

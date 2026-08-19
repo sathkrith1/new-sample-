@@ -4,9 +4,9 @@ import Link from "next/link";
 import { ScrollDissolveReveal } from "@/components/ui/scroll-dissolve-reveal";
 import { AsciiGlitchRipple } from "@/components/ui/ascii-glitch-ripple";
 import { LazyMount } from "@/components/site/lazy-mount";
-import { projects } from "@/data/projects";
+import { projects, Project } from "@/data/projects";
 
-function Caption({ project }: { project: (typeof projects)[number] }) {
+function Caption({ project }: { project: Project }) {
   return (
     <Link
       href={`/work/${project.slug}`}
@@ -48,9 +48,24 @@ export function ProjectsSection() {
     const nextIndex = (index + 1) % projects.length;
     return {
       ...project,
-      imageBack: projects[nextIndex].cover,
+      imageBack: projects[nextIndex]?.cover || project.cover,
     };
   });
+
+  if (projects.length === 0) {
+    return (
+      <section id="projects" className="relative">
+        <div className="px-6 md:px-10 pt-24 md:pt-32 pb-10 max-w-6xl mx-auto text-center">
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent mb-4">
+            Selected Work
+          </p>
+          <h2 className="font-display font-semibold text-[clamp(1.8rem,4vw,3rem)] max-w-2xl">
+            Projects coming soon...
+          </h2>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="projects" className="relative">

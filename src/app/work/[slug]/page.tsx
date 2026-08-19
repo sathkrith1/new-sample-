@@ -55,7 +55,7 @@ export default async function ProjectPage({
               {project.title}
             </h1>
             <div className="flex flex-wrap gap-2 mt-5">
-              {project.technologies.map((t) => (
+              {project.technologies.map((t: string) => (
                 <span
                   key={t}
                   className="font-mono text-[10px] uppercase tracking-wider border border-border rounded-full px-3 py-1 text-muted"
