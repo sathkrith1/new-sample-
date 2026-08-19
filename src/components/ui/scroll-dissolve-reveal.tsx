@@ -253,7 +253,6 @@ const Scene = ({ imageFront, imageBack, scrollYProgress }: SceneProps) => {
   const material2Ref = useRef<THREE.ShaderMaterial>(null);
   const { size } = useThree();
 
-  // Check if textures are loaded
   const texturesLoaded = texture1 && texture2 && texture1.image && texture2.image;
 
   const uniforms1 = useMemo(
@@ -332,6 +331,20 @@ const Scene = ({ imageFront, imageBack, scrollYProgress }: SceneProps) => {
     }
   });
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (material1Ref.current) {
+        material1Ref.current.dispose();
+      }
+      if (material2Ref.current) {
+        material2Ref.current.dispose();
+      }
+      if (texture1) texture1.dispose();
+      if (texture2) texture2.dispose();
+    };
+  }, [texture1, texture2]);
+
   if (!texturesLoaded) {
     return <></>;
   }
@@ -362,7 +375,7 @@ const Scene = ({ imageFront, imageBack, scrollYProgress }: SceneProps) => {
   );
 };
 
-export interface ScrollDissolveRevealProps {
+interface ScrollDissolveRevealProps {
   imageFront: string;
   imageBack: string;
   className?: string;
@@ -396,7 +409,7 @@ export function ScrollDissolveReveal({
 
   const containerHeight = isMobile ? '200vh' : '300vh';
 
-  // Fallback for reduced motion or if WebGL isn't performing well
+  // Fallback for reduced motion
   const shouldUseFallback = prefersReducedMotion || reducedMotion;
 
   if (shouldUseFallback) {
@@ -408,6 +421,7 @@ export function ScrollDissolveReveal({
       >
         <div className={cn("sticky top-0 h-screen w-full", className)}>
           <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${imageFront})` }} />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
         </div>
       </div>
     );
