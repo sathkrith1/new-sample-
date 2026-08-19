@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const repoName = "new-sample";
+const repoName = "new-sample-";
 const basePath = `/${repoName}`;
 
 const nextConfig: NextConfig = {
