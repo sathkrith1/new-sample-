@@ -6,6 +6,12 @@ import { AsciiGlitchRipple } from "@/components/ui/ascii-glitch-ripple";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
+function getAssetUrl(path: string) {
+  return `${basePath}${path}`;
+}
+
 export function generateStaticParams() {
   return projects.map((p) => ({ slug: p.slug }));
 }
@@ -34,7 +40,7 @@ export default async function ProjectPage({
       <main className="pt-16">
         <div className="relative h-[60vh] md:h-[75vh] w-full overflow-hidden">
           <Image
-            src={project.cover}
+            src={getAssetUrl(project.cover)}
             alt={project.title}
             fill
             priority

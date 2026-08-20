@@ -6,6 +6,12 @@ import { AsciiGlitchRipple } from "@/components/ui/ascii-glitch-ripple";
 import { LazyMount } from "@/components/site/lazy-mount";
 import { projects, Project } from "@/data/projects";
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
+function getAssetUrl(path: string) {
+  return `${basePath}${path}`;
+}
+
 function Caption({ project }: { project: Project }) {
   return (
     <Link
@@ -79,23 +85,23 @@ export function ProjectsSection() {
       </div>
 
       {projectsWithChainedImages.map((project) => (
-        <LazyMount
-          key={project.slug}
-          placeholder={
-            <div
-              className="relative h-screen w-full bg-cover bg-center"
-              style={{ backgroundImage: `url(${project.cover})` }}
-            >
-              <div className="absolute inset-0 bg-background/50" />
+<LazyMount
+            key={project.slug}
+            placeholder={
+              <div
+                className="relative h-screen w-full bg-cover bg-center"
+                style={{ backgroundImage: `url(${getAssetUrl(project.cover)})` }}
+              >
+                <div className="absolute inset-0 bg-background/50" />
+                <Caption project={project} />
+              </div>
+            }
+          >
+            <div className="relative">
+              <ScrollDissolveReveal imageFront={getAssetUrl(project.cover)} imageBack={getAssetUrl(project.imageBack)} />
               <Caption project={project} />
             </div>
-          }
-        >
-          <div className="relative">
-            <ScrollDissolveReveal imageFront={project.cover} imageBack={project.imageBack} />
-            <Caption project={project} />
-          </div>
-        </LazyMount>
+          </LazyMount>
       ))}
     </section>
   );
